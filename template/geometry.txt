@@ -1,0 +1,368 @@
+
+typedef double db;
+#define pi acos(-1.0)
+#define mp make_pair
+#define DB_MAX 1000000000.00
+
+class point{
+public:
+    db x;
+    db y;
+    point(db x, db y){
+        this->x=x; this->y=y;
+    }
+    point(){
+        this->x=0; this->y=0;
+    }
+    db dist(point a){
+        return (this->x-a.x)*(this->x-a.x)+(this->y-a.y)*(this->y-a.y);
+    }
+    db dist(){
+        return (this->x)*(this->x)+(this->y)*(this->y);
+    }
+    db angle(){
+        db d=sqrt(this->dist());
+        db t=asin(this->y/d);
+        t=abs(t);
+        if(x>=0 && y>=0) return t;
+        if(x<0 && y>=0) return pi-t;
+        if(x>=0 && y<0) return pi+pi-t;
+        return pi+t;
+    }
+    db angle(point p){
+        point h(p.x-this->x, p.y-this->y);
+        return h.angle();
+    }
+    friend ostream& operator<<(ostream& os, const point& dt);
+
+    point operator +(const point& b) const { return point{x+b.x, y+b.y}; }
+    point operator -(const point& b) const { return point{x-b.x, y-b.y}; }
+    ll operator *(const point& b) const { return (ll) x * b.y - (ll) y * b.x; }
+    void operator +=(const point& b) { x += b.x; y += b.y; }
+    void operator -=(const point& b) { x -= b.x; y -= b.y; }
+    void operator *=(const int k) { x *= k; y *= k; }
+
+    ll cross(const point& b, const point& c) const {
+        return (b - *this) * (c - *this);
+    }
+    bool bet(point a, point b){
+        db dx=(a.x-x)*(x-b.x);
+        db dy=(a.y-y)*(y-b.y);
+        return (dx<0 && dy<0)? false : true;
+    }
+};
+
+ostream& operator<<(ostream& os, const point& dt)
+{
+    os << "("<< dt.x<< ","<< dt.y<< ")";
+    return os;
+}
+
+class line{
+public:
+	db a;
+	db b;
+	db c;
+	line(db a, db b, db c){
+		this->a=a;
+		this->b=b;
+		this->c=c;
+	}
+	line(){
+		this->a=0;
+		this->b=0;
+		this->c=0;
+	}
+	line(point P, point Q){
+		a = Q.y - P.y;
+		b = P.x - Q.x;
+		c = -(a * (P.x) + b * (P.y));
+	}
+	line(db x1, db y1, db r1, db x2, db y2, db r2){
+        	a=2*x1-2*x2;
+        	b=2*y1-2*y2;
+        	c=x2*x2-x1*x1+y2*y2-y1*y1+r1*r1-r2*r2;
+    	}
+	db side(point g){
+       	 	return (g.x*a+g.y*b+c);
+    	}
+	db dis(point g){
+        	return abs((a*g.x+b*g.y+c)/sqrt(a*a+b*b));
+    	}
+	bool equal(line L){
+        	db f;
+        	if(L.a!=0) f=this->a/L.a;
+        	else if(L.b!=0) f=this->b/L.b;
+        	else if(L.c!=0) f=this->c/L.c;
+        	return ((this->a/L.a==f || (this->a==L.a && this->a==0))&&
+               		(this->b/L.b==f || (this->b==L.b && this->b==0))&&
+               		(this->c/L.c==f || (this->c==L.c && this->c==0)))? true : false;
+    	}
+
+    	bool parallel(line L){
+        	db f;
+        	if(L.a!=0) f=this->a/L.a;
+        	else if(L.b!=0) f=this->b/L.b;
+        	return ((this->a/L.a==f || (this->a==L.a && this->a==0))&&
+               	(this->b/L.b==f || (this->b==L.b && this->b==0)))? true : false;
+    	}
+	point intersect(line L){
+		db a1=this->a;
+		db b1=this->b;
+		db c1=this->c;
+		db a2=L.a;
+		db b2=L.b;
+		db c2=L.c;
+		db det=-a1*b2+a2*b1;
+
+		if (det == 0){
+			return point(DB_MAX, DB_MAX);
+		}
+		else{
+			db x = (b2*c1 - b1*c2)/det;
+			db y = (a1*c2 - a2*c1)/det;
+			return point(x, y);
+		}
+	}
+	db getx(db Y){
+        return -(b*Y+c)/a;
+	}
+	db gety(db X){
+        return -(a*X+c)/b;
+	}
+    friend ostream& operator<<(ostream& os, const line& dt);
+    bool operator==(const line& dt){
+        point o(0,0);
+        line L1(this->a,this->b,this->c);
+        line L2(dt.a,dt.b,dt.c);
+        return (L1.a*L2.b==L1.b*L2.a && L1.dis(o)==L2.dis(o))? true : false;
+    }
+};
+
+ostream& operator<<(ostream& os, const line& dt)
+{
+    os << "("<< dt.a<< ","<< dt.b<< ","<< dt.c<< ")";
+    return os;
+}
+
+class circle{
+public:
+    point c;
+    db r;
+    circle(db x, db y, db r){
+        c.x=x;
+        c.y=y;
+        this->r=r;
+    }
+    circle(){
+        c.x=0;
+        c.y=0;
+        this->r=0;
+    }
+    db area(){
+        return pi*r*r;
+    }
+    db intersection(circle C2){
+        circle C1=*this;
+        db l = sqrt(C1.c.dist(C2.c)), ans;
+        if(l>=C1.r+C2.r) ans = 0;
+        else if(l<=abs(C1.r-C2.r)) ans = pi*min(C1.r,C2.r)*min(C1.r,C2.r);
+
+        else{
+
+            db t1 = acos((C1.r*C1.r+l*l-C2.r*C2.r)/(2*l*C1.r));
+            db t2 = acos((C2.r*C2.r+l*l-C1.r*C1.r)/(2*l*C2.r));
+
+            ans =C1.r*C1.r*t1 - C1.r*C1.r*cos(t1)*sin(t1) + C2.r*t2*C2.r - C2.r*C2.r*cos(t2)*sin(t2);
+
+        }
+        return ans;
+    }
+};
+
+
+class polygon{
+public:
+    ll size;
+    point* P;
+    polygon(ll n){
+        size=n;
+        P= new point[n];
+    }
+    polygon(point* a, point* b){
+        ll n=b-a;
+        size=n;
+        P= new point[n];
+        for(ll i=0; i<n; i++){
+            P[i].x=a[i].x;
+            P[i].y=a[i].y;
+        }
+    }
+    polygon(vector< point > a){
+        ll n=a.size();
+        size=n;
+        P= new point[n];
+        for(ll i=0; i<n; i++){
+            P[i].x=a[i].x;
+            P[i].y=a[i].y;
+        }
+    }
+    db area(){
+        db up=0;
+        db dn=0;
+        ll n=size;
+        for(ll i=0; i<n; i++){
+            up+=P[i].x*P[(i+1)%n].y;
+            dn+=P[i].y*P[(i+1)%n].x;
+        }
+        return up-dn;
+    }
+    point centroid(){
+        if(size==1) return P[0];
+        if(size==2){
+            point p((P[0].x+P[1].x)/2,(P[0].y+P[1].y)/2);
+            return p;
+        }
+        db A=area();
+        point c(0,0);
+        ll n=size;
+        for(ll i=0; i<n; i++){
+            ll j=(i+1)%n;
+            c.x+=((P[i].x+P[j].x)*(P[i].x*P[j].y-P[j].x*P[i].y));
+            c.y+=((P[i].y+P[j].y)*(P[i].x*P[j].y-P[j].x*P[i].y));
+        }
+        c.x/=(3*A);
+        c.y/=(3*A);
+        return c;
+    }
+};
+
+point atx(point a, point b, db d){
+    if(a.x==d) return a;
+    if(b.x==d) return b;
+    line L(a,b);
+    point c(d,L.gety(d));
+    return c;
+}
+
+bool between(db a, db b, db c){
+    db d=(a-b)*(b-c);
+    return (d<0)? false : true;
+}
+
+point pointrat(point a, db ad, point b, db bd){
+    point c((ad*a.x+bd*b.x)/(ad+bd),(ad*a.y+bd*b.y)/(ad+bd));
+    return c;
+}
+
+bool onseg(point a, point b, point c){
+    line L1(a,b), L2(a,c);
+    //cout<< (a.x-b.x)*(c.x-b.x)<< " uuuu "<< (a.y-b.y)*(c.y-b.y)<< endl;
+    return (L1==L2 && (a.x-b.x)*(c.x-b.x)<=0 && (a.y-b.y)*(c.y-b.y)<=0)? true : false;
+}
+
+
+//----------------------Convex Hull
+point start;
+
+db area(point a, point b, point c){
+    return ((a.x*b.y+b.x*c.y+c.x*a.y)-(a.y*b.x+b.y*c.x+c.y*a.x));
+}
+
+bool compPoint(point a, point b){
+    db r=area(start,a,b);
+    if(r==0){
+        return start.dist(a)<=start.dist(b);
+    }
+    return (r<0)? true : false;
+}
+
+bool compLast(point a, point b){
+    return start.dist(a)>=start.dist(b);
+}
+
+polygon convexhull(vector<point> hull){
+    ll n=hull.size();
+	bool* ishull=new bool[n];
+    for(ll i=0; i<n ; i++) ishull[i]=false;
+
+    point corner(DB_MAX,DB_MAX);
+    int X, Y, z;
+    for(int i=0; i<n; i++){
+        if(hull[i].x<corner.x){
+            corner.x=hull[i].x;
+            corner.y=hull[i].y;
+            z=i;
+        }
+        else if(hull[i].x==corner.x && hull[i].y<corner.y){
+            corner.x=hull[i].x;
+            corner.y=hull[i].y;
+            z=i;
+        }
+    }
+    start=hull[z];
+    swap(hull[0],hull[z]);
+
+   sort(hull.begin()+1,hull.end(),compPoint);
+
+    ll d=n-2;
+    while(d>0 && area(start,hull[d],hull[d+1])==0) d--;
+    sort(hull.begin()+d+1,hull.end(),compLast);
+
+    vector< ll > ans;
+    ans.push_back(0);
+    ans.push_back(1);
+    ans.push_back(2);
+    int v=ans.size();
+    for(ll i=3; i<n; i++){
+        ll a=v-2;
+        ll b=v-1;
+        if(area(hull[ans[a]],hull[ans[b]],hull[i])<=0){
+            if(ans.size()==v) ans.push_back(i);
+            else ans[v]=i;
+            v++;
+        }
+        else{
+            v--;
+            i--;
+        }
+    }
+    polygon pg(v);
+    for(ll i=0; i<v; i++) pg.P[i]=hull[ans[i]];
+    return pg;
+}
+
+typedef struct{
+    ll x1;
+    ll y1;
+    ll x2;
+    ll y2;
+} rect;
+
+ll area(rect R){
+    if(R.x1>R.x2 || R.y1>R.y2) return 0;
+    return (R.x2-R.x1)*(R.y2-R.y1);
+}
+
+ll intersect(rect P, rect Q){
+    rect R;
+    R.x1=max(P.x1,Q.x1);
+    R.y1=max(P.y1,Q.y1);
+    R.x2=min(P.x2,Q.x2);
+    R.y2=min(P.y2,Q.y2);
+    return area(R);
+}
+
+rect sect(rect P, rect Q){
+    rect R;
+    R.x1=max(P.x1,Q.x1);
+    R.y1=max(P.y1,Q.y1);
+    R.x2=min(P.x2,Q.x2);
+    R.y2=min(P.y2,Q.y2);
+    return R;
+}
+
+//-----------------------Geometry
+
+
+mashroor
