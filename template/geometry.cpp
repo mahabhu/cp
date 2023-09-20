@@ -31,6 +31,7 @@ class point{
     friend ostream& operator<<(ostream& os, const point& dt);
     bool operator == (const point& dt) const{ return (x==dt.x && y==dt.y); }
     bool operator != (const point& dt) const{ return !(x==dt.x && y==dt.y); }
+    bool operator = (const point& dt) { x=dt.x; y=dt.y; return true; }
     point operator + (const point& dt){ return point(x+dt.x,y+dt.y); }
     point operator - (const point& dt){ return point(x-dt.x,y-dt.y); }
     line operator ^ (const point& dt);
@@ -104,9 +105,96 @@ class triangle{
     point incenter(){ return a.anglebisector(b,c)*b.anglebisector(a,c); }
     point orthocenter(){ return line(b,c).perpendicular(a)*line(a,c).perpendicular(b); }
     double area(){ return ((a.x*b.y+b.x*c.y+c.x*a.y)-(a.y*b.x+b.y*c.x+c.y*a.x))/2; }
+    //clockwise = negative
 };
 
+point start;
+bool compPoint(point a, point b){
+    double r=triangle(start,a,b).area();
+    if(r==0) return (start|a)<=(start|b);
+    return (r<0)? true : false;
+}
+bool compLast(point a, point b){ return (start|a)>=(start|b); }
 
+
+class polygon{
+    private:
+    public:
+    vector<point> p;
+    polygon(vector<point> p = vector<point>(0)):p(p){}
+    polygon(const polygon& P){ this->p=P.p; }
+    double area(){
+        double up=0, dn=0; ll n=p.size();
+        for(ll i=0; i<n; i++){ up+=p[i].x*p[(i+1)%n].y; dn+=p[i].y*p[(i+1)%n].x; }
+        return (up-dn)/2;
+    }
+    void convexhull(){
+        ll n=p.size();
+        bool* ishull=new bool[n];
+        for(ll i=0; i<n ; i++) ishull[i]=false;
+
+        point corner(DB_MAX,DB_MAX);
+        int X, Y, z;
+        for(int i=0; i<n; i++){
+            if((p[i].x<corner.x)||(p[i].x==corner.x && p[i].y<corner.y)){
+                corner=p[i];
+                z=i;
+            }
+        }
+        start=p[z];
+        swap(p[0],p[z]);
+
+        sort(p.begin()+1,p.end(),compPoint);
+
+        ll d=n-2;
+        while(d>0 && triangle(start,p[d],p[d+1]).area()==0) d--;
+        sort(p.begin()+d+1,p.end(),compLast);
+
+        vector<ll> ans;
+        ans.push_back(0);
+        ans.push_back(1);
+        ans.push_back(2);
+        int v=ans.size();
+        for(ll i=3; i<n; i++){
+            ll a=v-2;
+            ll b=v-1;
+            if(triangle(p[ans[a]],p[ans[b]],p[i]).area()<=0){
+                if(ans.size()==v) ans.push_back(i);
+                else ans[v]=i;
+                v++;
+            }
+            else{
+                v--;
+                i--;
+            }
+        }
+        vector<point> hull(v);
+        for(ll i=0; i<v; i++) hull[i]=p[ans[i]];
+        p = hull;
+    }
+    void rectify(){
+        vector<point> q;
+        ll n = p.size();
+        for(ll i=0; i<n; i++){
+            ll j = (i+1)%n;
+            if(p[i]!=p[j]) q.pb(p[i]);
+        }
+        p = q;
+        q.clear();
+        n = p.size();
+        for(ll i=0; i<n; i++){
+            ll j = (i+1)%n;
+            ll k = (i+n-1)%n;
+            if(triangle(p[i],p[j],p[k]).area()!=0) q.pb(p[i]);
+        }
+        p = q;
+        if(p.size()>2 && triangle(p[0],p[1],p[2]).area()<0){
+            for(ll i=0; i<p.size()/2; i++){
+                swap(p[i],p[n-1-i]);
+            }
+        }
+    }
+};
 
 // polygon
 // plane
@@ -114,32 +202,73 @@ class triangle{
 // rotating calipers
 // minkowsky sum
 
+point timus(point a, point b){
+    point c(a), d(b);
+    if(a.x>b.x) swap(c,d);
+    point e = d-c;
+    pair<point,point> p;
+    if(e.y>0){
+        if(abs(e.y)>e.x){
+            p = mp(point(0,e.y-e.x),point(e.x,e.x));
+        }
+        else{
+            p = mp(point(e.x-e.y,0),point(e.y,e.y));
+        }
+    }
+    else{
+        if(abs(e.y)>e.x){
+            p = mp(point(0,e.y+e.x),point(e.x,-e.x));
+        }
+        else{
+            p = mp(point(e.y+e.x),point(-e.y,e.y));
+        }
+    }
+    return (triangle(a,c+p.first,b).area()>0)? c+p.first : c+p.second;
+}
+
 void solve(){
-    point p, q, r; cin>> p>> q>> r;
-    cout<< triangle(p,q,r).circumcenter()<< endl;
-    cout<< triangle(p,q,r).incenter()<< endl;
-    cout<< triangle(p,q,r).orthocenter()<< endl;
-    cout<< triangle(p,q,r).centroid()<< endl;
-    cout<< triangle(p,q,r).area()<< endl;
+    // point p, q, r; cin>> p>> q>> r;
+    // cout<< triangle(p,q,r).circumcenter()<< endl;
+    // cout<< triangle(p,q,r).incenter()<< endl;
+    // cout<< triangle(p,q,r).orthocenter()<< endl;
+    // cout<< triangle(p,q,r).centroid()<< endl;
+    // cout<< triangle(p,q,r).area()<< endl;
+    ll n; cin>> n;
+    vector<point> p(n);
+    for(ll i=0; i<n; i++) cin>> p[i];
+    polygon P(p);
+    P.convexhull();
+    P.rectify();
+    // for(ll i=0; i<P.p.size(); i++) cout<< P.p[i];
+    // cout<< endl;
+    n = P.p.size();
+    vector<point> q;
+    for(ll i=0; i<n; i++){
+        ll j = (i+1)%n;
+        q.pb(P.p[i]);
+        cout<< P.p[i]<< P.p[j]<< timus(P.p[i],P.p[j])<< endl;
+        q.pb(timus(P.p[i],P.p[j]));
+    }
+    P.p = q;
+    //P.convexhull();
+    //P.rectify();
+    cout<< P.p.size()<< endl;
+    for(ll i=0; i<P.p.size(); i++){
+        cout<< P.p[i].x<< " "<< P.p[i].y<< endl;
+    }
 }
 
 int main(){
-    test{
+    //test{
         solve();
-    }
+    //}
 }
 
 
 /*
-11
-0 1
-1 2
-2 3
-2 4
-2 5
-3 6
-4 7
-5 8
-5 9
-5 10
+4
+1 0
+3 4
+4 1
+0 3
 */
