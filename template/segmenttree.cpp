@@ -10,15 +10,14 @@ typedef double db;
 #define mp make_pair
 //#define x first
 //#define y second
-// #define N 500009
+#define N 200001
 #define pll pair<ll,ll>
 #define vll vector<ll>
 #define pi acos(-1.0)
 #define mod 1000000007
 
-const ll MAXN = 200001;  // 1-based
 
-ll a[MAXN];
+ll a[N];
 
 struct node {
 	ll sum, mx1, mx2, mxc, mn1, mn2, mnc, lz;   
@@ -30,7 +29,7 @@ struct node {
 	// Second Min value
 	// Min value count
     // Lazy tag
-} tree[MAXN * 4];
+} tree[N * 4];
 
 void merge(ll e) {
 	// sum
@@ -146,7 +145,7 @@ void update_add(ll l, ll r, ll e, ll tl, ll tr, ll v) {
 		push_add(l,r,e,v);
 		return;
 	}
-	pushdown(e, l, r);
+	pushdown(l, r, e);
 
 	ll m = (l + r) >> 1;
 	update_add(l,m,e+e,tl,tr,v);
@@ -160,7 +159,7 @@ void update_chmin(ll l, ll r, ll e, ll tl, ll tr, ll v) {
 		push_max(e,v,r-l==1);
 		return;
 	}
-	pushdown(e, l, r);
+	pushdown(l, r, e);
 
 	ll m = (l+r)/2;
 	update_chmin(l,m,e+e,tl,tr,v);
@@ -174,7 +173,7 @@ void update_chmax(ll l, ll r, ll e, ll tl, ll tr, ll v) {
 		push_min(e, v, r-l==1);
 		return;
 	}
-	pushdown(e, l, r);
+	pushdown(l, r, e);
 
 	ll m = (l + r) >> 1;
 	update_chmax(l,m,e+e,tl,tr,v);
@@ -185,16 +184,21 @@ void update_chmax(ll l, ll r, ll e, ll tl, ll tr, ll v) {
 ll query_sum(ll l, ll r, ll e, ll tl, ll tr) {
 	if (tr <= l || r <= tl) { return 0; }
 	if (tl <= l && r <= tr) { return tree[e].sum; }
-	pushdown(e, l, r);
+	pushdown(l, r, e);
 
 	ll m = (l + r) >> 1;
 	return query_sum(l,m,e+e,tl,tr)+query_sum(m,r,e+e+1,tl,tr);
 }
 
+void update_val(ll t, ll v, ll n){
+	ll g = query_sum(0,n,1,t,t+1);
+	update_add(0,n,1,t,t+1,v-g);
+	return;
+}
+
 int main() {
-	ll q;
-	ll n;
-	cin >> n >> q;
+	ll n, q; cin>> n>> q;
+
 	for(ll i = 0; i < n; i++) cin >> a[i];
 	build(0,n,1);
 	for (ll j = 0; j < q; j++) {
