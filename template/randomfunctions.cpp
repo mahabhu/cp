@@ -1,0 +1,67 @@
+/*
+priority_queue<string, vector<string>, greater<string> > pq; 
+*/
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long int ll;
+typedef double db;
+#define DB_MAX 1000000000.00
+#define test int t; cin>> t; for(int tc = 1; tc<=t; tc++)
+#define arrays ll n; cin>> n; ll b[n]; for(ll i=0; i<n; i++) scanf("%lld",&b[i]);
+#define edgeinput ll g, h; cin>> g>> h; v[g].pb(h); v[h].pb(g);
+#define cases cout<< "Case "<< tc<< ": ";
+#define fastio ios::sync_with_stdio(false); cin.tie(nullptr);
+#define pb push_back
+#define mp make_pair
+#define fi first
+#define se second
+#define N 200009
+#define pll pair<ll,ll>
+#define vb vector<ll>
+#define vll vector<ll>
+#define vvll vector<vector<ll>>
+#define pi acos(-1.0)
+#define mod 998244353
+#define endl "\n"
+
+
+
+void permutation(ll n, ll i=0, vll word=vll(0,0), vb left=vb(0,0)){
+    if(i==n){
+        for(ll j=0; j<n; j++) cout<< word[j]<< " ";
+        cout<< endl;
+        return;
+    }
+    if(i==0){
+        word = vll(n);
+        left = vb(n,false);
+    }
+    for(ll j=0; j<n; j++){
+        if(!left[j]){
+            left[j]=true;
+            word[i]=j;
+            permutation(n,i+1,word,left);
+            left[j]=false;
+        }
+    }
+}
+
+void solve(){
+    permutation(3);
+    // ll n; cin>> n;
+    // ll a[n][3];
+    // for(ll i=0; i<3; i++){
+    //     for(ll j=0; j<n; j++){
+    //         cin>> a[j][i];
+    //     }
+    // }
+    
+}
+ 
+int main(){
+    // fastio
+    // test 
+        solve();
+}
+
+
