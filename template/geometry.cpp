@@ -103,6 +103,12 @@ class triangle{
     point incenter(){ return a.anglebisector(b,c)*b.anglebisector(a,c); }
     point orthocenter(){ return line(b,c).perpendicular(a)*line(a,c).perpendicular(b); }
     double area(){ return ((a.x*b.y+b.x*c.y+c.x*a.y)-(a.y*b.x+b.y*c.x+c.y*a.x))/2; }
+    double inside(point p){
+        return abs(abs(area())
+                  -abs(triangle(a,b,p).area())
+                  -abs(triangle(b,c,p).area())
+                  -abs(triangle(c,a,p).area()))<=0.0001;
+    }
     //clockwise = negative
 };
 
@@ -168,6 +174,27 @@ class polygon{
     }
     polygon convexHull(){
         return hull().hull().hull();
+    }
+    double inside(point a){
+        ll n = p.size();
+        if(triangle(p[0],p[1],p[n-1]).area()*triangle(p[0],p[1],a).area()<0 || 
+           triangle(p[0],p[n-1],p[1]).area()*triangle(p[0],p[n-1],a).area()<0){
+            return -1;
+           }
+        ll l = 1, r = n-1;
+        while(r-l>1){
+            ll m1 = (l+r)/2;
+            ll m2 = m1+1;
+            double f1 = triangle(p[0],p[m1],a).area();
+            double f2 = triangle(p[0],p[m2],a).area();
+            if(f1*f2<=0){
+                l = m1;
+                r = m2;
+            }
+            else if(f1>0) l = m2;
+            else if(f1<0) r = m1;
+        }
+        return 
     }
 };
 
