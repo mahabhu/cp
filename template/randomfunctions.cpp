@@ -57,6 +57,38 @@ void solve(){
     // }
     
 }
+
+ll lift(ll a, ll b){
+    if(b==0) return 1;
+    ll k = lift(a,b/2);
+    k*=k; k%=mod;
+    if(b%2==1) k*=a;
+    return k%mod;
+}
+ 
+ 
+ll ei(ll a){
+    return lift(a, mod-2);
+}
+ 
+class modint{
+    public:
+    ll n;
+    modint(ll n=0):n(n%mod){}
+    modint(const modint& dt){ this->n=dt.n;}
+    friend istream& operator>>(istream& os, modint& dt);
+    friend ostream& operator<<(ostream& os, const modint& dt);
+    bool operator == (const modint& dt) const{ return (n==dt.n); }
+    bool operator != (const modint& dt) const{ return !(n==dt.n); }
+    bool operator = (const modint& dt) { n=dt.n; return true; }
+    modint operator * (const modint& dt){ return modint((n*dt.n)%mod); }
+    modint operator / (const modint& dt){ return modint((n*ei(dt.n))%mod); }
+    modint operator + (const modint& dt){ return modint((n+dt.n)%mod); }
+    modint operator - (const modint& dt){ return modint((n-dt.n + mod)%mod); }
+    modint operator ^ (const modint& dt){ return modint(lift(n,dt.n)); }
+};
+istream& operator>>(istream& os, modint& dt){ os >> dt.n; return os; }
+ostream& operator<<(ostream& os, modint& dt){ os << dt.n; return os; }
  
 int main(){
     // fastio
