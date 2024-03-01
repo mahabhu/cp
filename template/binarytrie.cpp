@@ -17,7 +17,7 @@ typedef double db;
 #define mod 1000000007
 
 
-#define bit 19
+#define bit 25
 class binarytrie{
     public:
     binarytrie* a[2];
@@ -49,7 +49,7 @@ class binarytrie{
         if(i==-1) return n;
         ll g = (m>>i)%2;
         if(!a[g]) return 0;
-        return a[g]->find(n,i-1);
+        return a[g]->find(m,i-1);
     }
     void print(ll j=0, ll c = 0){
         for(ll i=0; i<j; i++) cout<< " ";
