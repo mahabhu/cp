@@ -12,6 +12,7 @@ typedef double db;
 //#define y second
 #define N 200009
 #define pll pair<ll,ll>
+#define vp vector<point>
 #define vll vector<ll>
 #define pi acos(-1.0)
 #define mod 1000000007
@@ -175,27 +176,27 @@ class polygon{
     polygon convexHull(){
         return hull().hull().hull();
     }
-    double inside(point a){
-        ll n = p.size();
-        if(triangle(p[0],p[1],p[n-1]).area()*triangle(p[0],p[1],a).area()<0 || 
-           triangle(p[0],p[n-1],p[1]).area()*triangle(p[0],p[n-1],a).area()<0){
-            return -1;
-           }
-        ll l = 1, r = n-1;
-        while(r-l>1){
-            ll m1 = (l+r)/2;
-            ll m2 = m1+1;
-            double f1 = triangle(p[0],p[m1],a).area();
-            double f2 = triangle(p[0],p[m2],a).area();
-            if(f1*f2<=0){
-                l = m1;
-                r = m2;
-            }
-            else if(f1>0) l = m2;
-            else if(f1<0) r = m1;
-        }
-        return 
-    }
+    // double inside(point a){
+    //     ll n = p.size();
+    //     if(triangle(p[0],p[1],p[n-1]).area()*triangle(p[0],p[1],a).area()<0 || 
+    //        triangle(p[0],p[n-1],p[1]).area()*triangle(p[0],p[n-1],a).area()<0){
+    //         return -1;
+    //        }
+    //     ll l = 1, r = n-1;
+    //     while(r-l>1){
+    //         ll m1 = (l+r)/2;
+    //         ll m2 = m1+1;
+    //         double f1 = triangle(p[0],p[m1],a).area();
+    //         double f2 = triangle(p[0],p[m2],a).area();
+    //         if(f1*f2<=0){
+    //             l = m1;
+    //             r = m2;
+    //         }
+    //         else if(f1>0) l = m2;
+    //         else if(f1<0) r = m1;
+    //     }
+    //     return 
+    // }
 };
 
 istream& operator>>(istream& os, polygon& P){ 
@@ -223,6 +224,44 @@ ostream& operator<<(ostream& os, const polygon& P){
 // vector
 // rotating calipers
 // minkowsky sum
+
+bool cmp1(point a, point b){
+    if(a.x==b.x) return a.y<b.y;
+    return a.x<b.x;
+}
+
+bool cmp2(point a, point b){
+    if(a.y==b.y) return a.x<b.x;
+    return a.y<b.y;
+}
+
+double minimumPair(vp P, ll tt=1){
+    ll n = P.size(), m[2];
+    if(n<=1) return LONG_MAX;
+    if(n==2) return P[0]|P[1];
+    sort(P.begin(),P.end(),cmp1);
+    ll mid = (P[(n-2)/2].x+P[n/2].x)/2;
+    vp Q[2], R[2];
+    for(ll i=0; i<n; i++) (i<P.size()/2)? Q[0].pb(P[i]) : Q[1].pb(P[i]);
+    double ans = min(minimumPair(Q[0]),minimumPair(Q[1]));
+    for(ll k=0; k<2; k++){
+        for(ll i=0; i<Q[k].size(); i++) if(abs(Q[k][i].x-mid)<=ans) R[k].pb(Q[k][i]);
+        m[k] = R[k].size();
+        if(m[k]>0) sort(R[k].begin(),R[k].end(),cmp2);
+    }
+    for(ll k=0; k<2; k++){
+        ll u = 0;
+        for(ll i=0; i<m[k]; i++){
+            while(u<m[1-k] && R[1-k][u].y>R[k][i].y) u++;
+            for(ll j=u; j<min(u+8,m[1-k]); j++){
+                ans = min(ans,R[k][i]|R[1-k][j]);
+            } 
+        }
+    }
+    return ans;
+}
+
+
 
 
 void solve(){
