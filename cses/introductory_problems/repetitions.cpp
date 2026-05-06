@@ -3,17 +3,21 @@ using namespace std;
 typedef long long int ll;
 
 void solve(){
-    string s; cin>> s;
-    ll j = 1, ans = 1;
-    for(ll i=0; i<s.size(); i++){
-        if(s[i-1]==s[i]) j++;
-        else{
-            ans = max(ans, j);
+    string s;
+    cin >> s;
+    ll n = s.size();
+    ll j = 1, mx = 1;
+    for(ll i=1; i<n; i++){
+        if(s[i] == s[i-1]) {
+            j++;
+            mx = max(mx, j);
+        }
+        else {
             j = 1;
         }
     }
-    ans = max(ans, j);
-    cout<< ans<< endl;
+    mx = max(mx, j);
+    cout << mx << "\n";
 }
 
 int main(){
